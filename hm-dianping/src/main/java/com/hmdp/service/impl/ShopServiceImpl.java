@@ -29,8 +29,6 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
 
     @Resource
     private StringRedisTemplate stringRedisTemplate;
-    @Autowired
-    private IShopService iShopService;
 
     /**
      * 根据id查询店铺信息
@@ -45,10 +43,18 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         if(StrUtil.isNotBlank(sp)){
             return Result.ok(JSONUtil.toBean(sp,Shop.class));
         }
+        //判断查询到的数据是否为null
+        if(sp != null){
+            return Result.fail("店铺不存在");
+        }
         //不存在，查询数据库
         Shop shop = getById(id);
         //店铺不存在
-        if(shop == null) return Result.fail("店铺不存在");
+        if(shop == null) {
+            stringRedisTemplate.opsForValue()
+                    .set(RedisConstants.CACHE_SHOP_KEY+id,"",RedisConstants.CACHE_NULL_TTL,TimeUnit.MINUTES);
+            return Result.fail("店铺不存在");
+        }
         //保存到redis
         stringRedisTemplate.opsForValue().set(RedisConstants.CACHE_SHOP_KEY + id, JSONUtil.toJsonStr(shop), RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);
         //返回
