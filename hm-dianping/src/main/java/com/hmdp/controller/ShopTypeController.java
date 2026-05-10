@@ -25,10 +25,17 @@ public class ShopTypeController {
     @Resource
     private IShopTypeService typeService;
 
+    public ShopTypeController(IShopTypeService typeService) {
+        this.typeService = typeService;
+    }
+
     @GetMapping("list")
     public Result queryTypeList() {
-        List<ShopType> typeList = typeService
-                .query().orderByAsc("sort").list();
+//        基于MyBatisPlus单表查询商店类型数据
+//        List<ShopType> typeList = typeService
+//                .query().orderByAsc("sort").list();
+//      基于redis来查询商店类型数据
+        List<ShopType> typeList = typeService.queryList();
         return Result.ok(typeList);
     }
 }
