@@ -1,8 +1,10 @@
 --1.参数列表
---产品id
+--seckill:stock:11
 local voucherId = ARGV[1]
 --用户id
 local userId = ARGV[2]
+--订单id
+local orderId = ARGV[3]
 
 --2.定义key值
 --库存key
@@ -25,4 +27,5 @@ end
 redis.call('incrby',stockKey,-1)
 --6.记录用户并返回
 redis.call('sadd',orderKey,userId)
+redis.call('xadd','stream.orders','*','voucherId',voucherId,'userId',userId,'id',orderId)
 return 0
