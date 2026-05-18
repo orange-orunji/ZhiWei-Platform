@@ -1,5 +1,6 @@
 package com.hmdp.service.impl;
 
+import cn.hutool.core.util.BooleanUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hmdp.dto.Result;
 import com.hmdp.entity.Blog;
@@ -8,7 +9,11 @@ import com.hmdp.mapper.BlogMapper;
 import com.hmdp.service.IBlogService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.service.IUserService;
+import com.hmdp.utils.RedisConstants;
 import com.hmdp.utils.SystemConstants;
+import com.hmdp.utils.UserHolder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,6 +34,9 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     private IUserService userService;
     @Resource
     private IBlogService blogService;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+
 
     @Override
     public List<Blog> queryHotBlogs(Integer current) {
@@ -39,7 +47,10 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         // 获取当前页数据
         List<Blog> records = page.getRecords();
         // 查询用户
-        records.forEach(this::extracted);
+        records.forEach(blog -> {
+            this.extracted(blog);
+            this.isBlogLiked(blog);
+        });
         return records;
     }
 
@@ -49,6 +60,11 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         blog.setName(user.getNickName());
         blog.setIcon(user.getIcon());
     }
+    private void isBlogLiked(Blog blog){
+        Long id = UserHolder.getUser().getId();
+        Boolean b = stringRedisTemplate.opsForSet().isMember(RedisConstants.BLOG_LIKED_KEY + id, id.toString());
+        blog.setIsLike(BooleanUtil.isTrue(b));
+    }
 
     @Override
     public Object queryBlog(Long id) {
@@ -56,6 +72,37 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         Blog blog = blogService.getById(id);
         //2.根据博客id查询用户相关信息
         extracted(blog);
+        //3.查询当前用户是否点赞过该博客
+        isBlogLiked(blog);
         return blog;
+    }
+
+    /**
+     * 获取当前用户是否点赞过该博客
+     * @param id 博客id
+     * @return
+     */
+    public Result isLiked(Long id) {
+        String userId = UserHolder.getUser().getId().toString();
+        String key = RedisConstants.BLOG_LIKED_KEY + id;
+        // 判断当前用户是否点赞过该博客
+        Boolean isLiked = stringRedisTemplate.opsForSet().isMember(key, userId);
+        if(BooleanUtil.isFalse(isLiked)) {
+            // 如果没有点赞
+            boolean b = update().setSql("liked = liked + 1").eq("id", id).update();
+            // 更新缓存
+            if(b){
+                stringRedisTemplate.opsForSet().add(key, userId);
+            }
+        }
+        else {
+            // 如果有点赞
+            boolean b = update().setSql("liked = liked - 1").eq("id", id).update();
+            // 更新缓存
+            if(b){
+                stringRedisTemplate.opsForSet().remove(key,userId);
+            }
+        }
+        return Result.ok(true);
     }
 }
