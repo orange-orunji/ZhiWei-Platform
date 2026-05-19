@@ -7,10 +7,16 @@ import com.hmdp.entity.User;
 import com.hmdp.mapper.FollowMapper;
 import com.hmdp.service.IFollowService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hmdp.service.IUserService;
 import com.hmdp.utils.UserHolder;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -23,6 +29,14 @@ import java.time.LocalDateTime;
 @Service
 public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> implements IFollowService {
 
+    @Resource
+    private final StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private IUserService userService;
+
+    public FollowServiceImpl(StringRedisTemplate stringRedisTemplate) {
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
 
     /**
      * 关注或取关
@@ -33,17 +47,23 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     @Override
     public Result follow(Long id, Boolean isTrue) {
         Long userId = UserHolder.getUser().getId();
+        String key = "follow:"+ id;
         if (isTrue) {
             Follow follow = new Follow();
             follow.setFollowUserId( id);
             follow.setUserId(userId);
             follow.setCreateTime(LocalDateTime.now());
             //关注
-            save(follow);
+            boolean isSuccess = save(follow);
+            if(isSuccess){
+                stringRedisTemplate.opsForSet().add(key,userId.toString());
+            }
         } else {
             //取关
-            remove(new QueryWrapper<Follow>().eq("follow_user_id", id).eq("user_id", userId));
-
+            boolean isSuccess = remove(new QueryWrapper<Follow>().eq("follow_user_id", id).eq("user_id", userId));
+            if(isSuccess){
+                stringRedisTemplate.opsForSet().remove(key,userId.toString());
+            }
         }
         return Result.ok();
     }
@@ -56,7 +76,22 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     @Override
     public Result isFollow(Long id) {
         Long userId = UserHolder.getUser().getId();
-        Integer user = query().eq("id", userId).eq("follow_id", id).count();
-        return Result.ok(user != 0);
+        Long user = Long.valueOf(query().eq("user_id", userId).eq("follow_user_id", id).count());
+        return Result.ok(user > 0);
+    }
+
+    @Override
+    public Result common(Long id) {
+        String key1 = "follow:"+ id;
+        String key2 = "follow:"+ UserHolder.getUser().getId();
+        Set<String> intersect = stringRedisTemplate.opsForSet().intersect(key1, key2);
+        if(intersect == null || intersect.isEmpty()){
+            return Result.ok(0);
+        }
+        List<Long> list = intersect.stream().map(Long::valueOf).collect(Collectors.toList());
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id",list);
+        List<User> result = userService.list(queryWrapper);
+        return Result.ok(result);
     }
 }

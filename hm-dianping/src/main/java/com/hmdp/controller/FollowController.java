@@ -41,4 +41,14 @@ public class FollowController {
     public Result follow(@PathVariable Long id,@PathVariable Boolean isTrue){
         return iFollowService.follow(id,isTrue);
     }
+
+    /**
+     * 共同关注
+     * @param id
+     * @return
+     */
+    @GetMapping("/common/{id}")
+    public Result common(@PathVariable Long id){
+        return iFollowService.common(id);
+    }
 }
