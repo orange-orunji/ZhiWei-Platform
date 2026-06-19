@@ -19,7 +19,7 @@
 | 前端 | Vue.js + Element UI + Axios | 单页面应用 |
 | Web 服务器 | Nginx 1.18.0 | 前端部署、反向代理 |
 | 认证 | JWT + 拦截器 | 登录校验、ThreadLocal 线程隔离 |
-| 构建工具 | Maven + docker | 依赖管理与打包、commands一键部署 |
+| 构建工具 | Maven + docker | 依赖管理与打包、compose一键部署 |
 
 ## ✨ 功能亮点
 
@@ -46,6 +46,8 @@ hmdp/
 │   └── pom.xml
 ├── nginx-1.18.0/              # Nginx 配置及前端静态文件
 │   └── html/hmdp/             # 前端页面
+├── Dockefile                  # 自定义镜像
+├── docker-compose.yml         # compose一键部署
 ├── hmdp.sql                   # 数据库初始化脚本
 └── README.md
 ```
@@ -59,10 +61,28 @@ hmdp/
 - Redis 7.0+
 - Nginx 1.18.0+
 - Maven 3.6+
+- Docker & Docker Compose (可选)
+- Ubuntu 26.01 LTS
+
+### 方式一：使用 Docker Compose（推荐）
+```bash
+# 克隆项目
+git clone https://github.com/orange-orunji/hmdp.git
+cd hmdp
+
+# 启动所有服务（MySQL、Redis、后端、Nginx）
+docker-compose up -d
+
+# 初始化数据库（首次执行）
+docker exec -i mysql-container mysql -uroot -p<YOUR PASSWORD> < hmdp.sql
+
+# 访问 http://localhost
+
+```
 
 ### 本地运行
 
-1. **导入数据库**
+1. **部署mysql**
    ```bash
    mysql -u root -p < hmdp.sql
    ```
@@ -99,6 +119,7 @@ hmdp/
 
 ## 📝 更新日志
 -  **2026-06-19**:docker一键部署
+-  **2026-06-18**:Linux系统部署
 -  **2026-06-17**:初始化 README
 -  **2026-06-17**:部署到Linux服务器
 -  **2026-05-20**:新增 Redis HyperLogLog UV 统计与 GEO 附近店铺滚动查询
