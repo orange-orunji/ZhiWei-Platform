@@ -15,7 +15,6 @@ public class RedisConfig {
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
-//        config.useSingleServer().setAddress("redis://localhost:6379");
 //        改为虚拟机配置docker部署到虚拟机上
         config.useSingleServer().setAddress("redis://192.168.161.128:6379")
         .setPassword("Ww2301079399@");
