@@ -32,8 +32,6 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     @Resource
     private IUserService userService;
     @Resource
-    private IBlogService blogService;
-    @Resource
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private IFollowService followService;
@@ -42,7 +40,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     @Override
     public List<Blog> queryHotBlogs(Integer current) {
         // 根据用户查询
-        Page<Blog> page = blogService.query()
+        Page<Blog> page = query()
                 .orderByDesc("liked")
                 .page(new Page<>(current, SystemConstants.MAX_PAGE_SIZE));
         // 获取当前页数据
@@ -75,7 +73,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
     @Override
     public Object queryBlog(Long id) {
         //1.根据id查询博客
-        Blog blog = blogService.getById(id);
+        Blog blog = getById(id);
         //2.根据博客id查询用户相关信息
         extracted(blog);
         //3.查询当前用户是否点赞过该博客
@@ -140,7 +138,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         UserDTO user = UserHolder.getUser();
         blog.setUserId(user.getId());
         // 2. 保存探店博文
-        boolean isSuccess = blogService.save(blog);
+        boolean isSuccess = save(blog);
         //3. 保存成功后,查询当前博主的所有粉丝数据
         if(!isSuccess){
             return Result.fail("发布失败");
@@ -181,7 +179,7 @@ public class BlogServiceImpl extends ServiceImpl<BlogMapper, Blog> implements IB
         }
         //4.根据id查询博客
         String linkedId = StringUtil.join(ids, ",");
-        List<Blog> blogs = blogService.query().in("id", ids).last("order by field(id, " + linkedId + ")").list();
+        List<Blog> blogs = query().in("id", ids).last("order by field(id, " + linkedId + ")").list();
         //5.定义好博客的内部类
         for (Blog blog : blogs) {
             //2.根据博客id查询用户相关信息
