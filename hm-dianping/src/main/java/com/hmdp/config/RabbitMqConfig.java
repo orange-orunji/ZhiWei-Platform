@@ -80,10 +80,6 @@ public class RabbitMqConfig {
         "exchange:" + returned.getExchange() + " routingKey:" + returned.getRoutingKey() + " body:" + body);
 
         });
-        template.setReturnsCallback(returned -> {
-});
-
-
 //        将returnCallback 生效
         template.setMandatory(true);
         return template;

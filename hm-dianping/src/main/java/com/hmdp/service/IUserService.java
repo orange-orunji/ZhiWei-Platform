@@ -5,6 +5,7 @@ import com.hmdp.dto.LoginFormDTO;
 import com.hmdp.dto.Result;
 import com.hmdp.entity.User;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 public interface IUserService extends IService<User> {
@@ -24,6 +25,14 @@ public interface IUserService extends IService<User> {
      * @return 登录结果
      */
     Result login(LoginFormDTO loginForm, HttpSession session);
+
+    /**
+     * 登出功能
+     *
+     * @param request HTTP请求对象，用于获取请求头中的token
+     * @return 登出结果
+     */
+    Result logout(HttpServletRequest request);
 
     /**
      * 签到功能

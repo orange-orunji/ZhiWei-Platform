@@ -20,6 +20,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -101,6 +102,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 RedisConstants.LOGIN_USER_TTL,
                 TimeUnit.MINUTES);
         return Result.ok(token);
+    }
+
+    @Override
+    public Result logout(HttpServletRequest request) {
+        // 1. 从请求头中获取 token
+        String token = request.getHeader("authorization");
+        if (token == null || token.isEmpty()) {
+            return Result.fail("用户未登录");
+        }
+        // 2. 删除 Redis 中的用户 token
+        stringRedisTemplate.delete(RedisConstants.LOGIN_USER_KEY + token);
+        // 3. 清除 ThreadLocal 中的用户信息
+        UserHolder.removeUser();
+        return Result.ok();
     }
 
     /**
