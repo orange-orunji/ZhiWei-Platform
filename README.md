@@ -115,6 +115,7 @@ docker exec -i mysql-container mysql -uroot -p<YOUR PASSWORD> < hmdp.sql
 | 博客 | `/blog/hot?current=1` | 热门博客列表 |
 
 ## 📝 更新日志
+-  **2026-06-21**:RabbitMQ消息队列完善秒杀( MQ 异步下单、死信队列、轮询查询接口)
 -  **2026-06-19**:docker一键部署
 -  **2026-06-17**:部署到Linux服务器、初始化 README
 -  **2026-05-20**:新增 Redis HyperLogLog UV 统计与 GEO 附近店铺滚动查询
@@ -132,7 +133,7 @@ docker exec -i mysql-container mysql -uroot -p<YOUR PASSWORD> < hmdp.sql
 2. **多级缓存**  
    引入 Caffeine 本地缓存 + Redis 分布式缓存，配合逻辑过期与布隆过滤器，大幅提升查询性能。
 
-3. **异步队列削峰**  
+✔ 3. 轮询查询接口
    接入 RabbitMQ，将秒杀下单异步化，配合死信队列实现重试机制，平滑峰值流量。
 
 4. **分布式锁**  
