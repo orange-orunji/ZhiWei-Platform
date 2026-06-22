@@ -14,7 +14,7 @@ local orderKey = "seckill:order:" .. voucherId
 
 --3.判断库存是否充足
 local stock = redis.call('get',stockKey)
-if ( stock == false or tonumber(stock) <= 0 )then
+if ( stock == false or tonumber(stock) <= 0 or tonumber(stock) <= 0 )then
     return 1
 end
 --4.判断用户是否重复下单

@@ -219,7 +219,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                 LIMIT,
                 Collections.emptyList(),
                 user.getId().toString(),
-                System.currentTimeMillis(),
+                String.valueOf(System.currentTimeMillis()),
                 String.valueOf(limitNum),
                 String.valueOf(window)
         );
@@ -245,8 +245,6 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         voucherOrder.setVoucherId(voucherId);
         voucherOrder.setUserId(user.getId());
         voucherOrder.setStatus(1);
-        // 从券信息中获取店铺id
-        voucherOrder.setShopId(voucherService.getById(voucherId).getShopId());
         rabbitTemplate.convertAndSend("order.exchange","order.generate",
                 voucherOrder,new CorrelationData(String.valueOf(orderId)));
                                 //CorrelationData消息快递单号,用于给生产者处理确定是什么订单传过来的，便于后续维护

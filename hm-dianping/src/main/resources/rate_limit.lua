@@ -6,9 +6,9 @@
 --1.参数列表
 --用户id
 local userId = ARGV[1]
-local curTime = ARGV[2]
-local limitCount = ARGV[3]
-local window = ARGV[4]
+local curTime = tonumber(ARGV[2])
+local limitCount = tonumber(ARGV[3])
+local window =  tonumber(ARGV[4])
 
 --2.定义key值
 --限流key
