@@ -213,7 +213,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 //            return Result.fail("活动太火爆，请稍后再试");
 //        }
 ////===============================================================================================
-//================================滑动窗口限流,Lua脚本原子性处理==================================
+////================================滑动窗口限流,Lua脚本原子性处理(压测时注释)==================================
         int limitNum = 5,window = 1000;
         Long l1 = stringRedisTemplate.execute(
                 LIMIT,
@@ -226,7 +226,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         if(l1 == null ||l1 !=1){
             return Result.fail("活动太火爆，请稍后再试");
         }
-//================================================================================
+////================================================================================
         //1.lua脚本实现秒杀库存,一人一单是否抢购成功
         Long l = stringRedisTemplate.execute(
                 //lua脚本引用

@@ -27,6 +27,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         , "/shop-type/**"
                         , "/blog/hot"
                         , "/voucher/**"
+                        , "/voucher-order/seckill/**"
                         , "upload/**"
                         , "/doc.html"
                         , "/webjars/**"
