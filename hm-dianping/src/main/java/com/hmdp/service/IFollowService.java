@@ -30,4 +30,9 @@ public interface IFollowService extends IService<Follow> {
      * @return
      */
     Result common(Long id);
+
+    Result queryFans();
+
+    Result queryFollowee();
+
 }
