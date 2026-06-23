@@ -1282,3 +1282,31 @@ CREATE TABLE `tb_voucher_order`  (
 -- ----------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- --  私信表 tb_message
+DROP TABLE IF EXISTS `tb_message`;
+CREATE TABLE `tb_message` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `sender_id` bigint NOT NULL COMMENT '发送者用户id',
+  `receiver_id` bigint NOT NULL COMMENT '接收者用户id',
+  `content` varchar(500) NOT NULL COMMENT '消息内容',
+  `is_read` tinyint(1) DEFAULT '0' COMMENT '是否已读，0未读 1已读',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '发送时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_sender_receiver` (`sender_id`, `receiver_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='私信表';
+
+-- 通知表 tb_notification
+DROP TABLE IF EXISTS `tb_notification`;
+CREATE TABLE `tb_notification` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `user_id` bigint NOT NULL COMMENT '接收通知的用户id',
+  `from_user_id` bigint NOT NULL COMMENT '触发通知的用户id',
+  `type` tinyint NOT NULL COMMENT '通知类型：1点赞 2评论 3关注',
+  `related_id` bigint DEFAULT NULL COMMENT '关联id（博客id或评论id）',
+  `content` varchar(255) DEFAULT NULL COMMENT '通知摘要内容',
+  `is_read` tinyint(1) DEFAULT '0' COMMENT '是否已读，0未读 1已读',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通知表';
