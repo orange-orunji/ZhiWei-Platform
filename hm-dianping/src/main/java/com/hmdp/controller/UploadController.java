@@ -22,7 +22,11 @@ public class UploadController {
         try {
             String originalFilename = image.getOriginalFilename();
             String fileName = createNewFileName(originalFilename, "avatars");
-            image.transferTo(new File(SystemConstants.IMAGE_UPLOAD_DIR, fileName));
+            File file = new File(SystemConstants.IMAGE_UPLOAD_DIR, fileName);
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
+            image.transferTo(file);
             log.debug("头像上传成功，{}", fileName);
             return Result.ok(fileName);
         } catch (IOException e) {
