@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/hm-dianping/hm-dianping.iml" filepath="$PROJECT_DIR$/hm-dianping/hm-dianping.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/hmdp.iml" filepath="$PROJECT_DIR$/.idea/hmdp.iml" />
     </modules>
   </component>
