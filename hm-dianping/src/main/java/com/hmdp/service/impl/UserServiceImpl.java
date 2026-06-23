@@ -124,15 +124,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public Result sign() {
-        //1.获取当前用户
         UserDTO user = UserHolder.getUser();
-        //2.获取当前日期
         LocalDateTime current = LocalDateTime.now();
-        //3.定义字符串
         String key = RedisConstants.USER_SIGN_KEY + user.getId() + current.format(DateTimeFormatter.ofPattern("yyyyMM"));
-        //4.获取当前日在当月第几天
         int day = current.getDayOfMonth();
-        //5.签到
+        Boolean signed = stringRedisTemplate.opsForValue().getBit(key, day - 1);
+        if (Boolean.TRUE.equals(signed)) {
+            return Result.fail("今日已签到");
+        }
         stringRedisTemplate.opsForValue().setBit(key, day - 1, true);
         return Result.ok();
     }
@@ -170,6 +169,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return Result.ok(count);
     }
 
+    @Override
+    public Result updateMe(UserDTO userDTO, HttpServletRequest request) {
+        UserDTO currentUser = UserHolder.getUser();
+        if (currentUser == null) {
+            return Result.fail("请先登录");
+        }
+        User user = getById(currentUser.getId());
+        if (user == null) {
+            return Result.fail("用户不存在");
+        }
+        boolean changed = false;
+        if (userDTO.getNickName() != null && !userDTO.getNickName().isBlank()) {
+            user.setNickName(userDTO.getNickName());
+            currentUser.setNickName(userDTO.getNickName());
+            changed = true;
+        }
+        if (userDTO.getIcon() != null && !userDTO.getIcon().isBlank()) {
+            user.setIcon(userDTO.getIcon());
+            currentUser.setIcon(userDTO.getIcon());
+            changed = true;
+        }
+        updateById(user);
+        if (changed) {
+            String token = request.getHeader("authorization");
+            if (token != null && !token.isBlank()) {
+                stringRedisTemplate.opsForHash().putAll(RedisConstants.LOGIN_USER_KEY + token,
+                    BeanUtil.beanToMap(currentUser, new HashMap<>(), CopyOptions.create()
+                        .ignoreNullValue().setFieldValueEditor((field, value) -> value.toString())));
+                stringRedisTemplate.expire(RedisConstants.LOGIN_USER_KEY + token,
+                    RedisConstants.LOGIN_USER_TTL, TimeUnit.MINUTES);
+            }
+        }
+        return Result.ok();
+    }
 
     /**
      * 创建新用户

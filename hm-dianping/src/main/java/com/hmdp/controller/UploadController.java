@@ -17,6 +17,19 @@ import java.util.UUID;
 @RequestMapping("upload")
 public class UploadController {
 
+    @PostMapping("/avatar")
+    public Result uploadAvatar(@RequestParam("file") MultipartFile image) {
+        try {
+            String originalFilename = image.getOriginalFilename();
+            String fileName = createNewFileName(originalFilename, "avatars");
+            image.transferTo(new File(SystemConstants.IMAGE_UPLOAD_DIR, fileName));
+            log.debug("头像上传成功，{}", fileName);
+            return Result.ok(fileName);
+        } catch (IOException e) {
+            throw new RuntimeException("头像上传失败", e);
+        }
+    }
+
     @PostMapping("blog")
     public Result uploadImage(@RequestParam("file") MultipartFile image) {
         try {
@@ -42,6 +55,12 @@ public class UploadController {
         }
         FileUtil.del(file);
         return Result.ok();
+    }
+
+    private String createNewFileName(String originalFilename, String dir) {
+        String suffix = StrUtil.subAfter(originalFilename, ".", true);
+        String name = UUID.randomUUID().toString();
+        return StrUtil.format("/{}/{}.{}", dir, name, suffix);
     }
 
     private String createNewFileName(String originalFilename) {

@@ -92,6 +92,16 @@ public class UserController {
         return Result.ok(userDTO);
     }
 
+    @PutMapping("/me")
+    public Result updateMe(@RequestBody UserDTO userDTO, HttpServletRequest request) {
+        return userService.updateMe(userDTO, request);
+    }
+
+    @PutMapping("/info")
+    public Result updateUserInfo(@RequestBody UserInfo userInfo) {
+        return userInfoService.updateUserInfo(userInfo);
+    }
+
     /**
      * 签到功能
      * @return
