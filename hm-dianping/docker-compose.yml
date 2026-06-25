@@ -4,7 +4,7 @@ services:
   mysql:
     image: mysql:8.0
     environment:
-      MYSQL_ROOT_PASSWORD: <YOUR MYSQL PASSWORD>
+      MYSQL_ROOT_PASSWORD: Ww2301079399@
     ports:
       - "3306:3306"
     volumes:
@@ -15,7 +15,7 @@ services:
     restart: always
   redis:
     image: redis:latest
-    command: redis-server --requirepass  <YOUR REDIS PASSWORD>
+    command: redis-server --requirepass  Ww2301079399@
     ports:
       - "6379:6379"
     volumes:
@@ -32,9 +32,16 @@ services:
       - mysql
       - redis
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/hmdp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/hmdp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: <YOUR MYSQL PASSWORD>
+      SPRING_DATASOURCE_PASSWORD: Ww2301079399@
+      SPRING_APPLICATION_JSON: '{"spring":{"redis":{"sentinel":{"master":"mymaster","nodes":["sentinel1:27000","sentinel2:27001","sentinel3:27002"]},"password":"Ww2301079399@"}}}'
+#    environment:
+#      SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/hmdp?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+#      SPRING_DATASOURCE_USERNAME: root
+#      SPRING_DATASOURCE_PASSWORD: Ww2301079399@
+#      SPRING_REDIS_SENTINEL_NODES: sentinel1:27000,sentinel2:27001,sentinel3:27002
+#      SPRING_REDIS_PASSWORD: Ww2301079399@
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: 6379
     networks:
