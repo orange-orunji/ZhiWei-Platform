@@ -4,11 +4,13 @@ import cn.hutool.core.bean.BeanUtil;
 import com.hmdp.dto.Result;
 import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.VoucherOrder;
+import com.hmdp.entity.SeckillVoucher;
 import com.hmdp.mapper.VoucherOrderMapper;
 import com.hmdp.service.ISeckillVoucherService;
 import com.hmdp.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.service.IVoucherService;
+import com.hmdp.utils.RedisConstants;
 import com.hmdp.utils.RedisIdWorker;
 import com.hmdp.utils.UserHolder;
 import com.rabbitmq.client.AMQP;
@@ -38,6 +40,8 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
+
+import static com.hmdp.utils.RedisConstants.SECKILL_STOCK_KEY;
 
 @Service
 @Slf4j
@@ -228,6 +232,14 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         }
 ////================================================================================
         //1.lua脚本实现秒杀库存,一人一单是否抢购成功
+        // 确保Redis库存缓存存在，不存在则从数据库初始化
+        String stockKey = RedisConstants.SECKILL_STOCK_KEY + voucherId;
+        if (Boolean.FALSE.equals(stringRedisTemplate.hasKey(stockKey))) {
+            SeckillVoucher sv = seckill.getById(voucherId);
+            if (sv != null && sv.getStock() != null) {
+                stringRedisTemplate.opsForValue().set(stockKey, sv.getStock().toString());
+            }
+        }
         Long l = stringRedisTemplate.execute(
                 //lua脚本引用
                 SECKILL,

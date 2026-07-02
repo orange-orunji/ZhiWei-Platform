@@ -243,9 +243,12 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
                 new Distance(5000),//5000米单位默认米
                 RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs().includeCoordinates().includeDistance().limit(size)
         );
-        //非空判断
-        if(geos == null){
-            return Result.ok(Collections.emptyList());
+        //GEO数据不存在或为空，fallback到普通数据库查询
+        if(geos == null || geos.getContent().isEmpty()){
+            Page<Shop> page = query()
+                    .eq("type_id", typeId)
+                    .page(new Page<>(current, SystemConstants.DEFAULT_PAGE_SIZE));
+            return Result.ok(page.getRecords());
         }
         //4.解析响应结果出店铺id
         List<Long> ids = new ArrayList<>(size);
